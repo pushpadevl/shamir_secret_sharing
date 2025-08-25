@@ -1,7 +1,7 @@
 //! # Shamir Secret Sharing (SSS)
 //!
 //! This crate provides a complete **randomized implementation** of the
-//! [Shamir Secret Sharing scheme](https://medium.com/data-science/how-to-share-a-secret-shamirs-secret-sharing-9a18a109a860) (https://www.geeksforgeeks.org/computer-networks/shamirs-secret-sharing-algorithm-cryptography/) (https://keyless.io/blog/post/a-beginners-guide-to-shamir-s-secret-sharing)
+//! [Shamir Secret Sharing scheme](https://medium.com/data-science/how-to-share-a-secret-shamirs-secret-sharing-9a18a109a860)
 //! in cryptography.
 //!
 //! ## Overview
@@ -67,7 +67,7 @@ pub enum Error{
     NotCoprimes
 }
 
-/// BitSize enum for choosing among bit sizes
+/// BitSize enum for choosing bit sizes
 #[derive(Clone, Copy, Debug)]
 pub enum BitSize {
     Bit256,
@@ -111,7 +111,7 @@ impl BitSize {
 }
 
 
-/// Share struct for storing (x,y) pairs wher y = polynomial(x) mod prime
+/// Share struct for storing (x,y) pairs where y = polynomial(x) mod prime
 #[allow(non_snake_case)]
 #[derive(Clone, Debug)]
 pub struct Share {
@@ -130,7 +130,7 @@ impl fmt::Display for Share {
     }
 }
 
-/// SS struct for storing prime modulus(BigUint) and the polynomial(Vec<BigUint>)
+/// SS struct for storing prime modulus(BigUint) and the polynomial()
 #[derive(Clone, Debug)]
 pub struct SS {
     prime: BigUint,
@@ -170,12 +170,12 @@ impl SS {
             Ok(instance)
     }
     
-    /// Get prime, useful if prime is generated instead of usage of fixed prime
+    /// Retrieves prime used in SS; Useful if prime is generated instead of usage of fixed prime
     pub fn get_prime(&self) -> &BigUint{ 
         &self.prime
     }
 
-    /// Generates shares with given points( &Vec<BigUint>) and returns Vec<Share>
+    /// Generates shares with given points and returns Vector of Shares
     pub fn gen_shares(&mut self, points:&Vec<BigUint>) -> Vec<Share> {
         let n:usize = points.len();
         let mut shares:Vec<Share> = Vec::with_capacity(n);
@@ -253,7 +253,7 @@ impl SS {
         // a.modpow(&(prime-2u32)).unwrap();
     }
 
-    /// Reconstructs secret using given shares and return secret (BigUint)
+    /// Reconstructs secret using given shares and returns secret (BigUint)
     pub fn reconstruct_secret(prime:&BigUint, shares:&Vec<Share>) -> BigUint{ 
         /* Comment: Does not have self,user should be able to try arbitrary share values to check if it matches.
            2. Also, it should work without an instance of SS, as that is majorly used for generating_shares.
