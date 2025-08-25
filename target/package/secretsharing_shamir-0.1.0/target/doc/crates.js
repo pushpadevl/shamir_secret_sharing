@@ -1,2 +1,0 @@
-window.ALL_CRATES = ["bit_set","bit_vec","bitflags","cfg_if","fastrand","fmt","fnv","getrandom","lazy_static","libc","linux_raw_sys","log","num","num_bigint","num_complex","num_integer","num_iter","num_primes","num_rational","num_traits","once_cell","ppv_lite86","proptest","quick_error","rand","rand_chacha","rand_core","rand_xorshift","regex_syntax","rustix","rusty_fork","secretsharing_shamir","tempfile","unarray","wait_timeout","zerocopy"];
-//{"start":21,"fragment_lengths":[9,10,11,9,11,6,6,12,14,7,16,6,6,13,14,14,11,13,15,13,12,13,11,14,7,14,12,16,15,9,13,23,11,10,15,11]}

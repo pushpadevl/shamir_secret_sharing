@@ -52,19 +52,18 @@
 //!
 //! ---
 
-use num_bigint::{BigUint ,RandBigInt};
-use num_traits::{Zero,One,Num};
+use num_bigint::{BigUint, RandBigInt};
+use num_primes::Generator;
+use num_traits::{Num, One, Zero};
 use rand::rngs::OsRng; // cryptographically secure RNG
 use std::fmt;
-use num_primes::Generator;
-
 
 /// Enum for error handling
 #[derive(Debug, PartialEq)]
-pub enum Error{
+pub enum Error {
     ThresholdTooSmall,
     ZeroInputGCD,
-    NotCoprimes
+    NotCoprimes,
 }
 
 /// BitSize enum for choosing bit sizes
@@ -72,9 +71,8 @@ pub enum Error{
 pub enum BitSize {
     Bit256,
     Bit512,
-    Bit1024
+    Bit1024,
 }
-
 
 impl BitSize {
     /// For fixed primes
@@ -90,9 +88,9 @@ impl BitSize {
         let prime = match self {
             BitSize::Bit256 => Generator::safe_prime(256),
             BitSize::Bit512 => Generator::safe_prime(512),
-            BitSize::Bit1024 => Generator::safe_prime(1024)
+            BitSize::Bit1024 => Generator::safe_prime(1024),
         };
-    // Note: Below conversion required becoz BigUint is part of two different crates, num-bigint and num-primes, 
+        // Note: Below conversion required becoz BigUint is part of two different crates, num-bigint and num-primes,
 
         BigUint::from_bytes_be(&prime.to_bytes_be())
     }
@@ -100,23 +98,21 @@ impl BitSize {
     /// For generating random BigUint numbers based on the bit size chosen during intialization of SS
     pub fn n_bit_random(&self) -> BigUint {
         let mut rng = OsRng; // secure RNG
-        let value: BigUint = match self{
+        let value: BigUint = match self {
             BitSize::Bit256 => rng.gen_biguint(256),
             BitSize::Bit512 => rng.gen_biguint(512),
-            BitSize::Bit1024 => rng.gen_biguint(1024)
-            
+            BitSize::Bit1024 => rng.gen_biguint(1024),
         };
         value
     }
 }
 
-
 /// Share struct for storing (x,y) pairs where y = polynomial(x) mod prime
 #[allow(non_snake_case)]
 #[derive(Clone, Debug)]
 pub struct Share {
-    X:BigUint,
-    Y:BigUint
+    X: BigUint,
+    Y: BigUint,
 }
 impl Share {
     // Share constructor
@@ -134,10 +130,10 @@ impl fmt::Display for Share {
 #[derive(Clone, Debug)]
 pub struct SS {
     prime: BigUint,
-    polynomial: Vec<BigUint>
+    polynomial: Vec<BigUint>,
 }
 impl fmt::Display for SS {
-     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Shamir Secret Sharing Instance:")?;
         writeln!(f, "  Prime: {}", self.prime)?;
         writeln!(f, "  Polynomial Coefficients:")?;
@@ -149,83 +145,81 @@ impl fmt::Display for SS {
 }
 impl SS {
     /// SS constructor
-    pub fn new( prime_size: BitSize, use_fixed_prime:bool,threshold: u8, secret: &BigUint) -> Result<Self, Error> {
+    pub fn new(
+        prime_size: BitSize,
+        use_fixed_prime: bool,
+        threshold: u8,
+        secret: &BigUint,
+    ) -> Result<Self, Error> {
         if threshold <= 1 {
             return Err(Error::ThresholdTooSmall);
         }
-            let prim = if use_fixed_prime {
-                                    prime_size.fixed_prime()
-                                } else { 
-                                    prime_size.new_prime()
-                                };
-            
-            let mut instance = SS {
-                prime: prim,
-                polynomial:Vec::new(),
-            };
-            
-            let secret_mod = secret % &instance.prime;
-            instance.gen_polynomial(secret_mod,threshold-1, prime_size);
-            
-            Ok(instance)
+        let prim = if use_fixed_prime {
+            prime_size.fixed_prime()
+        } else {
+            prime_size.new_prime()
+        };
+        let mut instance = SS {
+            prime: prim,
+            polynomial: Vec::new(),
+        };
+        let secret_mod = secret % &instance.prime;
+        instance.gen_polynomial(secret_mod, threshold - 1, prime_size);
+        Ok(instance)
     }
-    
     /// Retrieves prime used in SS; Useful if prime is generated instead of usage of fixed prime
-    pub fn get_prime(&self) -> &BigUint{ 
+    pub fn get_prime(&self) -> &BigUint {
         &self.prime
     }
 
     /// Generates shares with given points and returns Vector of Shares
-    pub fn gen_shares(&mut self, points:&Vec<BigUint>) -> Vec<Share> {
-        let n:usize = points.len();
-        let mut shares:Vec<Share> = Vec::with_capacity(n);
+    pub fn gen_shares(&mut self, points: &Vec<BigUint>) -> Vec<Share> {
+        let n: usize = points.len();
+        let mut shares: Vec<Share> = Vec::with_capacity(n);
 
         for i in 0..(n) {
-            shares.push(
-                Share{
-                    X:points[i].clone(),
-                    Y:self.eval_px_at_xi(&points[i])
-                }
-            );
+            shares.push(Share {
+                X: points[i].clone(),
+                Y: self.eval_px_at_xi(&points[i]),
+            });
         }
         shares
     }
 
-    fn eval_px_at_xi(&self, x:&BigUint)-> BigUint{ 
-        let mut y:BigUint = (self.polynomial)[0].clone(); //init 
-        let mut x_pow:BigUint = x.clone(); 
+    fn eval_px_at_xi(&self, x: &BigUint) -> BigUint {
+        let mut y: BigUint = (self.polynomial)[0].clone(); //init
+        let mut x_pow: BigUint = x.clone();
+
         for i in 1..(self.polynomial).len() {
-            let tmp = (&x_pow * (self.polynomial)[i].clone() ) % &self.prime;
-            y = (&y + &tmp) % &self.prime; 
-            x_pow = ( &x_pow * x) % &self.prime; 
-        } 
-        y 
+            let tmp = (&x_pow * (self.polynomial)[i].clone()) % &self.prime;
+            y = (&y + &tmp) % &self.prime;
+            x_pow = (&x_pow * x) % &self.prime;
+        }
+        y
     }
 
-    /// Builds polynomial using secret and pseudorandomly generated coefficients in modulo prime of degree = threshold -1 
-    pub fn gen_polynomial(&mut self,secret:BigUint, degree:u8, prime_size: BitSize){
-
+    /// Builds polynomial using secret and pseudorandomly generated coefficients in modulo prime of degree = threshold -1
+    pub fn gen_polynomial(&mut self, secret: BigUint, degree: u8, prime_size: BitSize) {
         let p = &self.prime;
         self.polynomial.push(secret % &self.prime); // secret consumed here
 
-        for _ in 0..(degree -1) {
-            let coeff:BigUint = prime_size.n_bit_random() % p; 
+        for _ in 0..(degree - 1) {
+            let coeff: BigUint = prime_size.n_bit_random() % p;
             self.polynomial.push(coeff);
-        } 
-        
+        }
         let mut leading_coeff;
         loop {
             leading_coeff = prime_size.n_bit_random() % p;
             if !leading_coeff.is_zero() {
                 break;
-            } 
+            }
         }
         self.polynomial.push(leading_coeff);
     }
 
-    fn gcd(x:&BigUint,y:&BigUint) -> Result<BigUint,Error>{
-         if x.is_zero() || y.is_zero() {
-        return Err(Error::ZeroInputGCD);
+    fn gcd(x: &BigUint, y: &BigUint) -> Result<BigUint, Error> {
+        if x.is_zero() || y.is_zero() {
+            return Err(Error::ZeroInputGCD);
         }
 
         let mut a = x.clone();
@@ -240,56 +234,50 @@ impl SS {
         Ok(a)
     }
 
-    fn inv_modp(prime:&BigUint,a: &BigUint) -> Result<BigUint,Error>{ 
+    fn inv_modp(prime: &BigUint, a: &BigUint) -> Result<BigUint, Error> {
         let aa = (prime + a) % prime;
-        if !SS::gcd(&aa,prime).unwrap().is_one() {
+        if !SS::gcd(&aa, prime).unwrap().is_one() {
             return Err(Error::NotCoprimes);
-        }   
+        }
         match aa.modinv(prime) {
             Some(inv) => Ok(inv),
-            None => Err(Error::NotCoprimes)
+            None => Err(Error::NotCoprimes),
         }
-        // Suggestion 9: could use fermat's little theorem 
+        // Suggestion 9: could use fermat's little theorem
         // a.modpow(&(prime-2u32)).unwrap();
     }
 
     /// Reconstructs secret using given shares and returns secret (BigUint)
-    pub fn reconstruct_secret(prime:&BigUint, shares:&Vec<Share>) -> BigUint{ 
+    pub fn reconstruct_secret(prime: &BigUint, shares: &Vec<Share>) -> BigUint {
         /* Comment: Does not have self,user should be able to try arbitrary share values to check if it matches.
            2. Also, it should work without an instance of SS, as that is majorly used for generating_shares.
-        */ 
+        */
         let n = shares.len();
-        let mut res:BigUint = BigUint::zero();
- 
+        let mut res: BigUint = BigUint::zero();
+
         for i in 0..n {
             let xi = &shares[i].X;
             let yi = &shares[i].Y;
-
-            let mut num=BigUint::one();
-            let mut den=BigUint::one();
-            
+            let mut num = BigUint::one();
+            let mut den = BigUint::one();
             for j in 0..n {
-                if i == j { continue; }
+                if i == j {
+                    continue;
+                }
                 let xj = &shares[j].X;
-
                 // numerator term: (0 - xj) mod p == (p - xj) mod p
                 let term_num = (prime - xj) % prime;
                 num = (num * term_num) % prime;
-
                 // denominator term: (xi - xj) mod p == (xi + (p - xj)) mod p
                 let term_den = (xi + ((prime - xj) % prime)) % prime;
                 // x's should not be equal, other inverse operation would panic
                 den = (den * term_den) % prime;
             }
-
             // inv_modp should return the modular inverse of `den` modulo `p`
             let den_inv = SS::inv_modp(prime, &den).unwrap();
             let li0 = (num * den_inv) % prime; // lagrange interpolation
-
-            // accumulate: y_i * lambda_i(0)
-            res = (res + (yi * &li0) % prime) % prime;
+            res = (res + (yi * &li0) % prime) % prime; // accumulate: y_i * lambda_i(0)
         }
-        
         res
     }
 }
@@ -297,7 +285,7 @@ impl SS {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use proptest::{prelude::*};
+    use proptest::prelude::*;
     #[test]
     fn test_inverse_exists() {
         let prime = BigUint::from(7_u32);
@@ -321,8 +309,7 @@ mod tests {
         let result = SS::inv_modp(&prime, &a);
         assert_eq!(result, Err(Error::NotCoprimes));
     }
-    
-    proptest!{
+    proptest! {
         #![proptest_config(ProptestConfig {
         cases: 100, // run 100 random test cases
         .. ProptestConfig::default()
@@ -331,7 +318,7 @@ mod tests {
         fn test_modular_inverse_property(bits in 8u64..309u64) {
             use rand::thread_rng;
             let mut rng = thread_rng();
-            let p = rng.gen_biguint(bits) | BigUint::one() | BigUint::from(3u32); 
+            let p = rng.gen_biguint(bits) | BigUint::one() | BigUint::from(3u32);
             // (ORing with odd ensures it's not trivially even)
             // Generate random a
             let mut a = rng.gen_biguint(bits) % &p;
@@ -346,15 +333,6 @@ mod tests {
                 let res = SS::inv_modp(&p, &a);
                     prop_assert!(res.is_err());
             }
-            
         }
-        
     }
 }
-
-
-
-    // Suggestion 7: Should we move secret to gen_share, so that one can gen_shares over any new secret with the same instance of SS? Not needed I guess.
-    // Suggestion 6: could use FFT, should I just user the choce
-    // Suggestion 8: Ger roots of unity for a generated prime
-    
