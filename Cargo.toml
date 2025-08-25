@@ -8,7 +8,8 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/pushpadevl/shamir_secret_sharing"
 keywords = ["cryptography", "secret-sharing", "shamir", "bigint","random","lagrange","interpolation","reconstruct","pseudorandom","threshold","prime","polynomial"]
 categories = ["cryptography", "algorithms", "mathematics", "password","secret-sharing"]
-
+documentation = "https://docs.rs/secretsharing-shamir"
+readme = "README.md"
 
 [dependencies]
 rand = "0.8"
