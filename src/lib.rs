@@ -98,8 +98,8 @@
 //! ## Notes
 //! - The number of points you choose to generate shares is the total no. of parties and the threshold is the minimum no. of parties required to rebuild the secret.
 //! - Ensure that **#points >= threshold** for correctness.  
-//! - This implementation has been stress-tested with fixed and generated primes of sizes **256, 512, and 1024 bits**, with polynomials of degree up to **20**.
-//! - Available prime sizes: **256, 512, 1024 bits** (choose fixed or generated).
+//! - This implementation has been stress-tested with fixed and generated primes of sizes **256, 512, and 1024 bits**, with polynomials of degree up to **254**.
+//! - Available prime sizes: **256, 512, 1024 bits** (fixed or generated).
 //! - The reconstruction is tested to work for threhold or more no of parties and fails when threshold is not reached.
 //!
 //! ---
