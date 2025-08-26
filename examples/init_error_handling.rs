@@ -27,23 +27,18 @@ fn main() {
          1. threshold >1,
          2. make instance mutable, because shares have to be generated
     */
-    /* Method 1: Using  match,
-    let instance_result = SS::new(bitsize,false, threshol, &secret);
+    // Method 1: Using  match, and error handling with newly generated safe prime
+    let instance_result = SS::new(bitsize, false, threshol, &secret);
     let mut sss = if let Ok(ins) = instance_result {
         println!("Created SS.");
         ins
-        } else if let Err(e) = instance_result{
-            eprintln!("Error creating SS. Reason: {:?}",e);
-            return; // or handle the error
-        } else {
-            eprintln!("Some other error.");
-            return;
-        };
-    */
-    // Method 2: use unwrap()
-    // SS takes 4 parameters {prime_size:BitSize, use_fixed_prime:bool, threshold:u8, secret:&BigUint}
-    // also, note that it uses new generated prime; To use pre-fixed primes, set second argument as true
-    let mut sss = SS::new(bitsize, false, threshol, &secret).unwrap();
+    } else if let Err(e) = instance_result {
+        eprintln!("Error creating SS. Reason: {:?}", e);
+        return; // or handle the error
+    } else {
+        eprintln!("Some other error.");
+        return;
+    };
 
     println!("{}", sss);
     // Generating shares on points
