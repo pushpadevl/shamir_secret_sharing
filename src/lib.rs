@@ -1,4 +1,4 @@
-//! # Shamir Secret Sharing (SSS)
+//! # Shamir Secret Sharing
 //!
 //! This crate provides a complete **randomized implementation** of the
 //! [Shamir Secret Sharing scheme](https://medium.com/data-science/how-to-share-a-secret-shamirs-secret-sharing-9a18a109a860)
