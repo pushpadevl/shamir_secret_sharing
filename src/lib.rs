@@ -118,24 +118,45 @@ use std::fmt;
 //use std::{fmt, str::FromStr};
 
 /// Enum for error handling
+/// ```rust
+/// use secretsharing_shamir::Error;
+/// let error = Error::NotCoprimes;
+/// ```
 #[derive(Debug, PartialEq)]
 pub enum Error {
+    /// If threshold value is <= 1
     ThresholdTooSmall,
+    /// When either one of the inputs to the GCD function is 0
     ZeroInputGCD,
+    /// When you try to find the inverse wrt a modulo with which GCD is not equal to 1. Won't happen here as primes are either safely generated or chosen from a given set
     NotCoprimes,
 }
 
 /// BitSize enum for choosing bit sizes
+/// ```rust
+/// use secretsharing_shamir::BitSize;
+/// let primesize = BitSize::BN254;
+/// ```
 #[derive(Clone, Copy, Debug)]
 pub enum BitSize {
+    /// BN254 prime used in Elliptic curves
     BN254,
+    /// 256 bit prime
     Bit256,
+    /// 512 bit prime
     Bit512,
+    /// 1024 bit prime
     Bit1024,
 }
 
 impl BitSize {
     /// For fixed primes
+    /// # Example 
+    /// ```rust
+    /// # use secretsharing_shamir::BitSize;
+    /// # use num_bigint::BigUint;
+    /// let prime = BitSize::BN254.fixed_prime();
+    /// ```
     pub fn fixed_prime(&self) -> BigUint {
         match self {
             BitSize::BN254 => BigUint::from_str_radix("21888242871839275222246405745257275088548364400416034343698204186575808495617", 10).unwrap(),    //BN254, circom, ethereum use this fixed prime
@@ -145,6 +166,12 @@ impl BitSize {
         }
     }
     /// For generating new primes
+    /// # Example 
+    /// ```rust
+    /// # use secretsharing_shamir::BitSize;
+    /// # use num_bigint::BigUint;
+    /// let prime = BitSize::BN254.new_prime();
+    /// ```
     pub fn new_prime(&self) -> BigUint {
         let prime = match self {
             BitSize::BN254 => {
@@ -165,6 +192,13 @@ impl BitSize {
     }
 
     /// For generating random BigUint numbers based on the bit size chosen during intialization of SS
+    /// # Example 
+    /// ```rust
+    /// # use secretsharing_shamir::{BitSize, SS, Share};
+    /// # use num_bigint::BigUint;
+    /// let prime_size = BitSize::Bit256;
+    /// let coeff: BigUint = &prime_size.n_bit_random() % &prime_size.fixed_prime();
+    /// ```
     pub fn n_bit_random(&self) -> BigUint {
         let mut rng = OsRng; // secure RNG
         let value: BigUint = match self {
@@ -178,14 +212,25 @@ impl BitSize {
 }
 
 /// Share struct for storing (x,y) pairs where y = polynomial(x) mod prime
+/// ```rust
+/// # use secretsharing_shamir::Share;
+/// # use num_bigint::BigUint;
+/// let share = Share::new(BigUint::from(1u32), BigUint::from(22u32));
+/// ```
 #[allow(non_snake_case)]
 #[derive(Clone, Debug)]
 pub struct Share {
     X: BigUint,
     Y: BigUint,
 }
+
 impl Share {
-    // Share constructor
+    /// Share constructor
+    /// ```rust
+    /// # use secretsharing_shamir::{BitSize, SS, Share};
+    /// # use num_bigint::BigUint;
+    /// let share = Share::new(BigUint::from(1u32), BigUint::from(2u32));
+    /// ```
     pub fn new(x: BigUint, y: BigUint) -> Self {
         Self { X: x, Y: y }
     }
@@ -195,13 +240,18 @@ impl fmt::Display for Share {
         write!(f, "Share: (x = {}, y = {})", self.X, self.Y)
     }
 }
-
 /// SS struct for storing prime modulus(BigUint) and the polynomial()
+/// ```rust
+/// # use secretsharing_shamir::{SS, BitSize};
+/// # use num_bigint::BigUint;
+/// let ss = SS::new(BitSize::Bit256, true, 3u8, &BigUint::from(4u16)).unwrap();
+/// ```
 #[derive(Clone, Debug)]
 pub struct SS {
     prime: BigUint,
     polynomial: Vec<BigUint>,
 }
+
 impl fmt::Display for SS {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Shamir Secret Sharing Instance:")?;
@@ -213,8 +263,14 @@ impl fmt::Display for SS {
         Ok(())
     }
 }
+/// Implementor block with functions for SS struct
 impl SS {
     /// SS constructor
+    /// ```rust
+    /// # use secretsharing_shamir::{BitSize, SS};
+    /// # use num_bigint::BigUint;
+    /// let mut ss = SS::new(BitSize::Bit256, true, 3u8, &BigUint::from(4u16)).unwrap();
+    /// ```
     pub fn new(
         prime_size: BitSize,
         use_fixed_prime: bool,
@@ -238,11 +294,24 @@ impl SS {
         Ok(instance)
     }
     /// Retrieves prime used in SS; Useful if prime is generated instead of usage of fixed prime
+    /// ```rust
+    /// # use secretsharing_shamir::{BitSize, SS};
+    /// # use num_bigint::BigUint;
+    /// let mut ss = SS::new(BitSize::Bit256, true, 3u8, &BigUint::from(4u16)).unwrap();
+    /// let prime = ss.get_prime(); 
+    /// ```
     pub fn get_prime(&self) -> &BigUint {
         &self.prime
     }
 
     /// Generates shares with given points and returns Vector of Shares
+    /// ```rust
+    /// # use secretsharing_shamir::{BitSize, SS, Share};
+    /// # use num_bigint::BigUint;
+    /// let mut ss = SS::new(BitSize::Bit256, true, 3u8, &BigUint::from(25u16)).unwrap();
+    /// let points = vec![BigUint::from(4u16),BigUint::from(16u16),BigUint::from(13u16),BigUint::from(1u16),BigUint::from(12u16),BigUint::from(7u16),];
+    /// let shares = ss.gen_shares(&points);
+    /// ```
     pub fn gen_shares(&mut self, points: &Vec<BigUint>) -> Vec<Share> {
         let n: usize = points.len();
         let mut shares: Vec<Share> = Vec::with_capacity(n);
@@ -268,7 +337,23 @@ impl SS {
         y
     }
 
-    /// Builds polynomial using secret and pseudorandomly generated coefficients in modulo prime of degree = threshold -1
+    /// 1. Builds polynomial using secret and pseudorandomly generated coefficients in modulo prime of degree = threshold -1
+    /// 2. SS contructor automatically generates a new polynomial, there's no need to call gen_polynomial() again. 
+    /// 3. But what if we want to change it?
+    /// 4. If you want to change the polynomial or change the threshold or the secret, this method can be used.
+    /// 5. Although the prime stays the same.
+    /// 6. prime_size is only a parameter becoz gen_polynomial needs random coefficients of the same bit size as the prime for efficiency. 
+    /// Example
+    /// ```rust
+    /// # use secretsharing_shamir::{BitSize, SS};
+    /// # use num_bigint::BigUint;
+    /// 
+    /// let prime_size = BitSize::Bit256;
+    /// let mut instance = SS::new(prime_size, true, 3u8, &BigUint::from(33u32)).unwrap();
+    /// 
+    /// // Now user wants to change polynomial or secret or threshold.
+    /// instance.gen_polynomial(BigUint::from(55u32), 3u8, prime_size);
+    /// ```
     pub fn gen_polynomial(&mut self, secret: BigUint, degree: u8, prime_size: BitSize) {
         let p = &self.prime;
         self.polynomial.push(secret % &self.prime); // secret consumed here
@@ -318,6 +403,24 @@ impl SS {
     }
 
     /// Reconstructs secret using given shares and returns secret (BigUint)
+    /// #Example
+    /// ```rust
+    /// # use num_bigint::BigUint;
+    /// # use secretsharing_shamir::{BitSize, SS, Share};
+    /// let secret = BigUint::from(25u32);
+    /// let threshold = 3u8;
+    /// let points = vec![BigUint::from(4u16),BigUint::from(16u16),BigUint::from(13u16),BigUint::from(1u16),BigUint::from(12u16),BigUint::from(7u16)];
+    /// 
+    /// //Generate shares
+    /// let mut ss = SS::new(BitSize::Bit256, true, threshold, &secret).unwrap();
+    /// let shares = ss.gen_shares(&points);
+    /// 
+    /// // Reconstruct using exactly `threshold` shares
+    /// let selected: Vec<_> = shares.iter().take(threshold as usize).cloned().collect();
+    /// let prime = ss.get_prime(); // random prime
+    /// let recovered = SS::reconstruct_secret(prime, &selected);
+    /// assert_eq!(recovered, &secret % prime, "Reconstructed secret mismatch");
+    /// ```
     pub fn reconstruct_secret(prime: &BigUint, shares: &Vec<Share>) -> BigUint {
         /* Comment: Does not have self,user should be able to try arbitrary share values to check if it matches.
            2. Also, it should work without an instance of SS, as that is majorly used for generating_shares.
@@ -356,6 +459,7 @@ impl SS {
 mod tests {
     use super::*;
     use proptest::prelude::*;
+
     #[test]
     fn test_inverse_exists() {
         let prime = BigUint::from(7_u32);
