@@ -1,6 +1,6 @@
 [package]
 name = "secretsharing_shamir"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Pushpendra Pal pushpadevl@outlook.com"]
 edition = "2021"
 description = "Hardened Rust cryptographic library for Shamir's Secret Sharing with support for multiple prime sizes."

@@ -9,6 +9,9 @@
 //! only a **threshold number** of shares are required to reconstruct
 //! the original secret. Fewer than the threshold shares reveal nothing about it.
 //!
+//! ## New features
+//! - Added support for circom prime BN254, for upcoming shares verification feature.
+//!
 //! ### Core Features
 //! - Generate shares of a secret securely
 //! - Reconstruct the secret from a threshold of shares
@@ -101,7 +104,10 @@
 //! - This implementation has been stress-tested with fixed and generated primes of sizes **256, 512, and 1024 bits**, with polynomials of degree up to **254**.
 //! - Available prime sizes: **256, 512, 1024 bits** (fixed or generated).
 //! - The reconstruction is tested to work for threhold or more no of parties and fails when threshold is not reached.
+//! - When you choose BN254 prime, the 'use_fixed_prime' value, if false, does not generate new_prime instead uses the fixed prime of BN254.
 //!
+//! ## Change Log
+//! - Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
 //! ---
 
 use num_bigint::{BigUint, RandBigInt};
@@ -109,6 +115,7 @@ use num_primes::Generator;
 use num_traits::{Num, One, Zero};
 use rand::rngs::OsRng; // cryptographically secure RNG
 use std::fmt;
+//use std::{fmt, str::FromStr};
 
 /// Enum for error handling
 #[derive(Debug, PartialEq)]
@@ -121,6 +128,7 @@ pub enum Error {
 /// BitSize enum for choosing bit sizes
 #[derive(Clone, Copy, Debug)]
 pub enum BitSize {
+    BN254,
     Bit256,
     Bit512,
     Bit1024,
@@ -130,6 +138,7 @@ impl BitSize {
     /// For fixed primes
     pub fn fixed_prime(&self) -> BigUint {
         match self {
+            BitSize::BN254 => BigUint::from_str_radix("21888242871839275222246405745257275088548364400416034343698204186575808495617", 10).unwrap(),    //BN254, circom, ethereum use this fixed prime
             BitSize::Bit256 => BigUint::from_str_radix("D7F71B07B75BC19077A53B9B1BAEA33249C8CD5C132C7FA3E20E18AAF17F5A9B", 16).unwrap(),
             BitSize::Bit512 => BigUint::from_str_radix("EB3CFFA5DBAB1325022CE08399445F0E4B9B146B0BA3D17967D70616B2E33B62FCE08149C3D76FA8EAC2769B4DB5232DFF3416848ED598BA2470CEC3CB5DCD6B",16).unwrap(),
             BitSize::Bit1024 => BigUint::from_str_radix("DE97F71CFA25F986F6D07618C9EDB1378517A16101CEF67262AFBD3D703E94134F91757A03262A988C1A8DE361AAE62F96D7E2C70C10AFD647F718A628651C234225FE75F25FB1D6FB28596BEA5E2802B5B4E4BE3CE573192CC1E1F1DEB8CACAC9BC55AA8CB213945388C78271D5E500D34469A4108680E1AF56FA7C05D321DF",16).unwrap()
@@ -138,24 +147,33 @@ impl BitSize {
     /// For generating new primes
     pub fn new_prime(&self) -> BigUint {
         let prime = match self {
-            BitSize::Bit256 => Generator::safe_prime(256),
-            BitSize::Bit512 => Generator::safe_prime(512),
-            BitSize::Bit1024 => Generator::safe_prime(1024),
+            BitSize::BN254 => {
+                println!("Setting 'use_fixed_prime = false' doesn't matter if BitSize::BN254 is chosen, i.e. no new prime is generated. You could set it to true to avoid this message.");
+                BigUint::from_str_radix(
+                    "21888242871839275222246405745257275088548364400416034343698204186575808495617",
+                    10,
+                )
+                .unwrap()
+            }
+            BitSize::Bit256 => BigUint::from_bytes_be(&Generator::safe_prime(256).to_bytes_be()), // conversion needed as num_primes and num_bigint, both have a BigUint which are same essentially, but are treated differently by RUST
+            BitSize::Bit512 => BigUint::from_bytes_be(&Generator::safe_prime(512).to_bytes_be()),
+            BitSize::Bit1024 => BigUint::from_bytes_be(&Generator::safe_prime(1024).to_bytes_be()),
         };
         // Note: Below conversion required becoz BigUint is part of two different crates, num-bigint and num-primes,
-
-        BigUint::from_bytes_be(&prime.to_bytes_be())
+        prime
+        //BigUint::from_bytes_be(&prime.to_bytes_be())
     }
 
     /// For generating random BigUint numbers based on the bit size chosen during intialization of SS
     pub fn n_bit_random(&self) -> BigUint {
         let mut rng = OsRng; // secure RNG
         let value: BigUint = match self {
+            BitSize::BN254 => rng.gen_biguint(254),
             BitSize::Bit256 => rng.gen_biguint(256),
             BitSize::Bit512 => rng.gen_biguint(512),
             BitSize::Bit1024 => rng.gen_biguint(1024),
         };
-        value
+        value // modulus will be taken care of later
     }
 }
 

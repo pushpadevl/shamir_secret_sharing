@@ -40,6 +40,24 @@ fn test_reconstruction_fails_with_insufficient_shares() {
     );
 }
 
+#[allow(non_snake_case)]
+#[test]
+fn test_secret_reconstruction_with_BN254_prime() {
+    let threshold = 3;
+    let secret = BigUint::from(232_u8);
+    let points: Vec<BigUint> = (1u32..=25u32).map(BigUint::from).collect();
+    let bitsize = BitSize::BN254;
+
+    // Generate shares
+    let mut ss = SS::new(bitsize, true, threshold, &secret).unwrap();
+    let shares = ss.gen_shares(&points);
+
+    // Pick exactly `threshold` shares (first 3 for simplicity)
+    let subset: Vec<_> = shares.iter().take(threshold as usize).cloned().collect();
+    let recovered = SS::reconstruct_secret(ss.get_prime(), &subset);
+    assert_eq!(recovered, secret % &bitsize.fixed_prime());
+}
+
 #[test]
 fn test_secret_reconstruction_with_512bit_prime() {
     let threshold = 3;
