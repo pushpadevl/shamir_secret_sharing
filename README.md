@@ -112,9 +112,10 @@ For more working examples, see [`docs.rs`](https://docs.rs/crate/secretsharing_s
 - Available prime sizes: **256, 512, 1024 bits** (fixed or generated), along with BN254 prime.
 - The reconstruction is tested to work for threhold or more no of parties and fails when threshold is not reached.
 
-//! ## Change Log
-//! - 2025_08_29: Complete documentation and exmaple coverage
-//! - 2025_08_29: Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
+## Change Log
+
+- 2025_08_29: Complete documentation and exmaple coverage
+- 2025_08_29: Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
 
 ## License
 
