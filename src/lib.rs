@@ -109,9 +109,9 @@
 //! ## Change Log
 //! - 2025_08_29: Complete documentation and exmaple coverage
 //! - 2025_08_29: Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
-//! 
+//!
 //! ## License
-//! 
+//!
 //! **MIT OR Apache-2.0**
 //! ---
 
@@ -156,7 +156,7 @@ pub enum BitSize {
 
 impl BitSize {
     /// For fixed primes
-    /// # Example 
+    /// # Example
     /// ```rust
     /// # use secretsharing_shamir::BitSize;
     /// # use num_bigint::BigUint;
@@ -171,7 +171,7 @@ impl BitSize {
         }
     }
     /// For generating new primes
-    /// # Example 
+    /// # Example
     /// ```rust
     /// # use secretsharing_shamir::BitSize;
     /// # use num_bigint::BigUint;
@@ -197,7 +197,7 @@ impl BitSize {
     }
 
     /// For generating random BigUint numbers based on the bit size chosen during intialization of SS
-    /// # Example 
+    /// # Example
     /// ```rust
     /// # use secretsharing_shamir::{BitSize, SS, Share};
     /// # use num_bigint::BigUint;
@@ -303,7 +303,7 @@ impl SS {
     /// # use secretsharing_shamir::{BitSize, SS};
     /// # use num_bigint::BigUint;
     /// let mut ss = SS::new(BitSize::Bit256, true, 3u8, &BigUint::from(4u16)).unwrap();
-    /// let prime = ss.get_prime(); 
+    /// let prime = ss.get_prime();
     /// ```
     pub fn get_prime(&self) -> &BigUint {
         &self.prime
@@ -343,19 +343,19 @@ impl SS {
     }
 
     /// 1. Builds polynomial using secret and pseudorandomly generated coefficients in modulo prime of degree = threshold -1
-    /// 2. SS contructor automatically generates a new polynomial, there's no need to call gen_polynomial() again. 
+    /// 2. SS contructor automatically generates a new polynomial, there's no need to call gen_polynomial() again.
     /// 3. But what if we want to change it?
     /// 4. If you want to change the polynomial or change the threshold or the secret, this method can be used.
     /// 5. Although the prime stays the same.
-    /// 6. prime_size is only a parameter becoz gen_polynomial needs random coefficients of the same bit size as the prime for efficiency. 
+    /// 6. prime_size is only a parameter becoz gen_polynomial needs random coefficients of the same bit size as the prime for efficiency.
     /// Example
     /// ```rust
     /// # use secretsharing_shamir::{BitSize, SS};
     /// # use num_bigint::BigUint;
-    /// 
+    ///
     /// let prime_size = BitSize::Bit256;
     /// let mut instance = SS::new(prime_size, true, 3u8, &BigUint::from(33u32)).unwrap();
-    /// 
+    ///
     /// // Now user wants to change polynomial or secret or threshold.
     /// instance.gen_polynomial(BigUint::from(55u32), 3u8, prime_size);
     /// ```
@@ -415,11 +415,11 @@ impl SS {
     /// let secret = BigUint::from(25u32);
     /// let threshold = 3u8;
     /// let points = vec![BigUint::from(4u16),BigUint::from(16u16),BigUint::from(13u16),BigUint::from(1u16),BigUint::from(12u16),BigUint::from(7u16)];
-    /// 
+    ///
     /// //Generate shares
     /// let mut ss = SS::new(BitSize::Bit256, true, threshold, &secret).unwrap();
     /// let shares = ss.gen_shares(&points);
-    /// 
+    ///
     /// // Reconstruct using exactly `threshold` shares
     /// let selected: Vec<_> = shares.iter().take(threshold as usize).cloned().collect();
     /// let prime = ss.get_prime(); // random prime
