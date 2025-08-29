@@ -101,7 +101,7 @@
 //! ## Notes
 //! - The number of points you choose to generate shares is the total no. of parties and the threshold is the minimum no. of parties required to rebuild the secret.
 //! - Ensure that **#points >= threshold** for correctness.  
-//! - This implementation has been stress-tested with fixed and generated primes of sizes **256, 512, and 1024 bits**, with polynomials of degree up to **254**.
+//! - This implementation has been stress-tested with fixed and generated primes of sizes **BN254, 256, 512, and 1024 bits**, with polynomials of degree up to **254**.
 //! - Available prime sizes: **256, 512, 1024 bits** (fixed or generated), along with BN254 prime.
 //! - The reconstruction is tested to work for threhold or more no of parties and fails when threshold is not reached.
 //! - When you choose BN254 prime, the 'use_fixed_prime' value, if false, does not generate new_prime instead uses the fixed prime of BN254.
@@ -109,6 +109,10 @@
 //! ## Change Log
 //! - 2025_08_29: Complete documentation and exmaple coverage
 //! - 2025_08_29: Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
+//! 
+//! ## License
+//! 
+//! **MIT OR Apache-2.0**
 //! ---
 
 use num_bigint::{BigUint, RandBigInt};
