@@ -15,7 +15,7 @@
 //! ### Core Features
 //! - Generate shares of a secret securely
 //! - Reconstruct the secret from a threshold of shares
-//! - Supports large prime sizes (256, 512, 1024 bits)
+//! - Supports large prime sizes (BN254, 256, 512, 1024 bits)
 //! - Polynomial degrees up to 255 (max size of u8) tested
 //! - Option to use fixed primes or generate them dynamically
 //!
@@ -31,7 +31,7 @@
 //!
 //! ```ignore
 //! SS {
-//!     prime_size: BitSize,        // One of 256, 512, 1024
+//!     prime_size: BitSize,        // One of BN254, Bit256, Bit512, Bit1024
 //!     use_fixed_prime: bool,      // Choose fixed primes or generate new
 //!     threshold: u8,              // Minimum number of shares needed
 //!     secret: &BigUint,           // The secret to be shared
@@ -45,7 +45,7 @@
 //!fn main() {
 //!    /*SHARE GENERATION */
 //!
-//!    // Init a bitsize from Bit256, Bit512, Bit1024 bits, for prime generation as well as random polynomial coefficients
+//!    // Init a bitsize from BN254, Bit256, Bit512, Bit1024 bits, for prime generation as well as random polynomial coefficients
 //!    // Needed for fixed Primes, Not needed if primes are generated, (in SS init, set use_fixed_prime argument as false)
 //!    let bitsize = BitSize::Bit256;
 //!    // Secret to be shared
@@ -102,12 +102,13 @@
 //! - The number of points you choose to generate shares is the total no. of parties and the threshold is the minimum no. of parties required to rebuild the secret.
 //! - Ensure that **#points >= threshold** for correctness.  
 //! - This implementation has been stress-tested with fixed and generated primes of sizes **256, 512, and 1024 bits**, with polynomials of degree up to **254**.
-//! - Available prime sizes: **256, 512, 1024 bits** (fixed or generated).
+//! - Available prime sizes: **256, 512, 1024 bits** (fixed or generated), along with BN254 prime.
 //! - The reconstruction is tested to work for threhold or more no of parties and fails when threshold is not reached.
 //! - When you choose BN254 prime, the 'use_fixed_prime' value, if false, does not generate new_prime instead uses the fixed prime of BN254.
 //!
 //! ## Change Log
-//! - Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
+//! - 2025_08_29: Complete documentation and exmaple coverage
+//! - 2025_08_29: Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
 //! ---
 
 use num_bigint::{BigUint, RandBigInt};
