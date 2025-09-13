@@ -10,7 +10,7 @@
 //! the original secret. Fewer than the threshold shares reveal nothing about it.
 //!
 //! ## New features
-//! - Added support for circom prime BN254, for upcoming shares verification feature.
+//! - Added new functions to retrieve X and Y values from the Share.
 //!
 //! ### Core Features
 //! - Generate shares of a secret securely
@@ -18,6 +18,7 @@
 //! - Supports large prime sizes (BN254, 256, 512, 1024 bits)
 //! - Polynomial degrees up to 255 (max size of u8) tested
 //! - Option to use fixed primes or generate them dynamically
+//! - Support for circom prime BN254, for upcoming shares verification feature.
 //!
 //! ## Usage
 //!
@@ -107,6 +108,8 @@
 //! - When you choose BN254 prime, the 'use_fixed_prime' value, if false, does not generate new_prime instead uses the fixed prime of BN254.
 //!
 //! ## Change Log
+//!
+//! - 2025_09_13: Added functions to retreive X and Y field values from the Share construct
 //! - 2025_08_29: Complete documentation and exmaple coverage
 //! - 2025_08_29: Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
 //!
@@ -231,13 +234,58 @@ pub struct Share {
 
 impl Share {
     /// Share constructor
+    /// # Arguments
+    ///
+    /// * `x` - The first part of the share.
+    /// * `y` - The second part of the share.
+    ///
+    /// # Example
+    ///
     /// ```rust
-    /// # use secretsharing_shamir::{BitSize, SS, Share};
-    /// # use num_bigint::BigUint;
-    /// let share = Share::new(BigUint::from(1u32), BigUint::from(2u32));
+    /// use secretsharing_shamir::{BitSize, SS, Share};
+    /// use num_bigint::BigUint;
+    ///
+    /// let x = BigUint::from(10u32);
+    /// let y = BigUint::from(20u32);
+    /// let share = Share::new(x.clone(), y.clone());
+    /// assert_eq!(share.x(), &x);
+    /// assert_eq!(share.y(), &y);
     /// ```
     pub fn new(x: BigUint, y: BigUint) -> Self {
         Self { X: x, Y: y }
+    }
+    ///Returns a reference to the `x` component of the share.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use secretsharing_shamir::{BitSize, SS, Share};
+    /// use num_bigint::BigUint;
+    ///
+    /// let x = BigUint::from(10u32);
+    /// let y = BigUint::from(20u32);
+    /// let share = Share::new(x.clone(), y.clone());
+    /// assert_eq!(share.x(), &x);
+    /// ```
+    pub fn x(&self) -> &BigUint {
+        &self.X
+    }
+
+    /// Returns a reference to the `y` component of the share.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use secretsharing_shamir::{BitSize, SS, Share};
+    /// use num_bigint::BigUint;
+    ///
+    /// let x = BigUint::from(10u32);
+    /// let y = BigUint::from(20u32);
+    /// let share = Share::new(x.clone(), y.clone());
+    /// assert_eq!(share.y(), &y);
+    /// ```
+    pub fn y(&self) -> &BigUint {
+        &self.Y
     }
 }
 impl fmt::Display for Share {

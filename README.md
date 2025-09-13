@@ -8,7 +8,7 @@ The scheme allows a secret to be split into multiple shares, such that only a **
 
 ## New features
 
-- Added support for circom prime BN254, for upcoming shares verification feature.
+- Added new functions to retrieve X and Y values from the Share.
 
 ### Core Features
 
@@ -17,6 +17,7 @@ The scheme allows a secret to be split into multiple shares, such that only a **
 - Supports large prime sizes (BN254, 256, 512, 1024 bits)
 - Polynomial degrees up to 255 (max size of u8) tested
 - Option to use fixed primes or generate them dynamically
+- Support for circom prime BN254, for upcoming shares verification feature.
 
 ## Installation
 
@@ -29,7 +30,7 @@ secretsharing-shamir = "0.1"
 
 ## Usage
 
-```rust
+```ignore
 SS {
     prime_size: BitSize,     // One of BN254, Bit256, Bit512, Bit1024
     use_fixed_prime: bool,   // Choose fixed primes or generate new
@@ -114,6 +115,7 @@ For more working examples, see [`docs.rs`](https://docs.rs/crate/secretsharing_s
 
 ## Change Log
 
+- 2025_09_13: Added functions to retreive X and Y field values from the Share construct
 - 2025_08_29: Complete documentation and exmaple coverage
 - 2025_08_29: Added support for BN254 curve scalar prime (base prime and scalar prime for BN254 are same) for upcoming shares verification feature. BN254 curve is used for circom proof generation and ethereum as well.
 
